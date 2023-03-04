@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  webserver:
+    build:
+      context: .
+      dockerfile: dockerfile.nginxx
+    image: wcruz_nginx
+    container_name: wcruz_nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      nodeApp:
+        condition: service_started
+    networks:
+    - nginet
+
+  nodeApp:
+    build:
+      context: .
+      dockerfile: dockerfile.nodejs
+    image: wcruz_nodejs
+    container_name: wcruznodeapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      myDatabase:
+        condition: service_healthy
+    healthcheck:
+      test: ["curl","-v", "wcruznodeapp:3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - nginet
+  
+  myDatabase:
+    build:
+      context: .
+      dockerfile: dockerfile.mysql
+    image: wcruz_mysql
+    command: "--innodb-use-native-aio=0"
+    container_name: wcruz_mysql
+    healthcheck:
+      test: "mysql -u root -proot"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    tty: true
+    restart: always
+    networks:
+      - nginet
+
+networks:
+  nginet:
+    driver: bridge
