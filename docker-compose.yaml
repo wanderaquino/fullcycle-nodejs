@@ -43,7 +43,7 @@ services:
     command: "--innodb-use-native-aio=0"
     container_name: wcruz_mysql
     healthcheck:
-      test: "mysql -u root -proot"
+      test: ["CMD", "mysql","-uroot", "-proot"]
       interval: 5s
       timeout: 5s
       retries: 5
